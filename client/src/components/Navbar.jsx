@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { Sun, Moon, LogOut, Sparkles, LayoutDashboard, BookOpen, BarChart2, Calendar, Wind } from 'lucide-react';
+import { Sun, Moon, LogOut, Sparkles, LayoutDashboard, BookOpen, BarChart2, Calendar, Wind, Flame, Trophy } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -11,6 +11,7 @@ const navLinks = [
     { label: 'Calendar',  path: '/calendar',    icon: Calendar },
     { label: 'Analytics', path: '/analytics',   icon: BarChart2 },
     { label: 'Breathe',   path: '/breathe',     icon: Wind },
+    { label: 'Premium',   path: '/premium',     icon: Trophy },
 ];
 
 const Navbar = () => {
@@ -94,6 +95,30 @@ const Navbar = () => {
                         </AnimatePresence>
                     </motion.button>
 
+                    {/* Streak pill */}
+                    {(user?.streak > 0) && (
+                        <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-400 to-pink-500 shadow-sm"
+                        >
+                            <Flame className="w-3.5 h-3.5 text-white" />
+                            <span className="text-xs font-bold text-white">{user.streak}d</span>
+                        </motion.div>
+                    )}
+
+                    {/* Premium badge */}
+                    {user?.isPremium && (
+                        <Link to="/premium">
+                            <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 shadow-sm"
+                            >
+                                <Trophy className="w-3.5 h-3.5 text-white" />
+                                <span className="text-xs font-bold text-white">Premium</span>
+                            </motion.div>
+                        </Link>
+                    )}
+
                     {/* Avatar + name */}
                     <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200 dark:border-slate-700">
                         <div className="w-8 h-8 rounded-xl bg-gradient-brand flex items-center justify-center text-white text-xs font-bold shadow-float">
@@ -152,20 +177,37 @@ const Navbar = () => {
                                     {label}
                                 </Link>
                             ))}
-                            <div className="pt-3 mt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-xl bg-gradient-brand flex items-center justify-center text-white text-xs font-bold">
-                                        {initials}
+                            <div className="pt-3 mt-2 border-t border-slate-100 dark:border-slate-800">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="w-8 h-8 rounded-xl bg-gradient-brand flex items-center justify-center text-white text-xs font-bold">
+                                            {initials}
+                                        </div>
+                                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{user?.name}</span>
                                     </div>
-                                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{user?.name}</span>
+                                    <div className="flex gap-2">
+                                        <button onClick={toggleTheme} className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                            {theme.mode === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                                        </button>
+                                        <button onClick={handleLogout} className="p-2 rounded-xl text-red-500 bg-red-50 dark:bg-red-900/20">
+                                            <LogOut className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <button onClick={toggleTheme} className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                                        {theme.mode === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                                    </button>
-                                    <button onClick={handleLogout} className="p-2 rounded-xl text-red-500 bg-red-50 dark:bg-red-900/20">
-                                        <LogOut className="w-4 h-4" />
-                                    </button>
+                                {/* Mobile streak + premium */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {(user?.streak > 0) && (
+                                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-400 to-pink-500">
+                                            <Flame className="w-3.5 h-3.5 text-white" />
+                                            <span className="text-xs font-bold text-white">{user.streak} day streak</span>
+                                        </div>
+                                    )}
+                                    {user?.isPremium && (
+                                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500">
+                                            <Trophy className="w-3.5 h-3.5 text-white" />
+                                            <span className="text-xs font-bold text-white">✨ Premium</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

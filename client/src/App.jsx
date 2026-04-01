@@ -9,6 +9,7 @@ import Journal from './pages/Journal';
 import Analytics from './pages/Analytics';
 import Calendar from './pages/Calendar';
 import Breathing from './pages/Breathing';
+import Premium from './pages/Premium';
 import Navbar from './components/Navbar';
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -54,6 +55,7 @@ function App() {
                         <Route path="/analytics" element={<Analytics />} />
                         <Route path="/calendar" element={<Calendar />} />
                         <Route path="/breathe" element={<Breathing />} />
+                        <Route path="/premium" element={<Premium />} />
                         <Route path="*" element={<Navigate to="/" />} />
                       </Routes>
                     </AnimatePresence>

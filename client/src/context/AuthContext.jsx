@@ -60,8 +60,18 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
+    // Called after a successful check-in to sync streak without re-login
+    const updateStreakInfo = (streak, isPremium, lastCheckIn) => {
+        setUser((prev) => {
+            if (!prev) return prev;
+            const updated = { ...prev, streak, isPremium, lastCheckIn };
+            localStorage.setItem('userInfo', JSON.stringify(updated));
+            return updated;
+        });
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, register, logout, loading, updateStreakInfo }}>
             {children}
         </AuthContext.Provider>
     );

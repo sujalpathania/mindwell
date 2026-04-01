@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Edit3, BarChart2, Wind, Calendar, CheckCircle2, Zap, Heart, Smile } from 'lucide-react';
+import { Edit3, BarChart2, Wind, Calendar, CheckCircle2, Zap, Heart, Smile, Flame, Trophy, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SmartSuggestions from '../components/SmartSuggestions';
 
@@ -44,13 +44,28 @@ const QuickCard = ({ to, icon: Icon, iconBg, iconColor, label, sub, pulse }) => 
     </Link>
 );
 
+// Floating confetti particle
+const ConfettiParticle = ({ delay, x, color }) => (
+    <motion.div
+        className="absolute w-2 h-2 rounded-full pointer-events-none"
+        style={{ backgroundColor: color, left: `${x}%`, top: '-10px' }}
+        initial={{ y: -20, opacity: 1, rotate: 0 }}
+        animate={{ y: 320, opacity: 0, rotate: 360 }}
+        transition={{ duration: 2.5, delay, ease: 'easeIn' }}
+    />
+);
+
+const CONFETTI_COLORS = ['#6366f1','#d946ef','#f59e0b','#10b981','#3b82f6','#ec4899'];
+
 const Dashboard = () => {
-    const { user } = useAuth();
+    const { user, updateStreakInfo } = useAuth();
     const [mood, setMood]       = useState(5);
     const [energy, setEnergy]   = useState(5);
     const [note, setNote]       = useState('');
     const [logged, setLogged]   = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
+    const [newStreak, setNewStreak]   = useState(null);
+    const [justUnlocked, setJustUnlocked] = useState(false);
 
     const handleMoodSubmit = async (e) => {
         e.preventDefault();
@@ -61,7 +76,15 @@ const Dashboard = () => {
                     Authorization: `Bearer ${user.token}`,
                 },
             };
-            await axios.post('http://localhost:5000/api/mood', { mood, energy, note }, config);
+            const { data } = await axios.post('http://localhost:5000/api/mood', { mood, energy, note }, config);
+
+            // Sync streak into context + localStorage
+            const prevPremium  = user?.isPremium;
+            const { streak, isPremium } = data;
+            updateStreakInfo(streak, isPremium, new Date().toISOString());
+
+            setNewStreak(streak);
+            setJustUnlocked(!prevPremium && isPremium);   // true only on the exact unlock moment
             setLogged(true);
         } catch (err) {
             console.error(err);
@@ -74,10 +97,20 @@ const Dashboard = () => {
     const greetingHour = new Date().getHours();
     const greeting = greetingHour < 12 ? 'Good morning' : greetingHour < 17 ? 'Good afternoon' : 'Good evening';
 
+    // Streak from user context (live after check-in)
+    const currentStreak = (newStreak !== null ? newStreak : user?.streak) || 0;
+    const isPremium     = user?.isPremium || false;
+
+    const streakColor =
+        currentStreak >= 30 ? 'from-amber-400 to-orange-500' :
+        currentStreak >= 14 ? 'from-orange-400 to-pink-500'  :
+        currentStreak >= 7  ? 'from-indigo-400 to-purple-500' :
+                              'from-slate-400 to-slate-500';
+
     return (
         <motion.div variants={container} initial="hidden" animate="show" className="space-y-8 pb-8">
             {/* Header */}
-            <motion.div variants={item} className="flex items-start justify-between">
+            <motion.div variants={item} className="flex items-start justify-between flex-wrap gap-4">
                 <div>
                     <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1 tracking-wide uppercase">
                         {greeting} ☀️
@@ -90,13 +123,33 @@ const Dashboard = () => {
                         How are you feeling today? Let's check in. 💜
                     </p>
                 </div>
-                {/* Floating stat pills */}
-                <div className="hidden sm:flex flex-col gap-2">
-                    <div className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 px-4 py-2 rounded-full border border-indigo-100 dark:border-indigo-800/40">
-                        <Heart className="w-4 h-4 text-indigo-500" />
-                        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-300">Daily check-in</span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-fuchsia-50 dark:bg-fuchsia-900/30 px-4 py-2 rounded-full border border-fuchsia-100 dark:border-fuchsia-800/40">
+
+                {/* Streak + stat pills */}
+                <div className="flex flex-col gap-2">
+                    {/* Streak badge */}
+                    <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r ${streakColor} shadow-md`}
+                    >
+                        <Flame className="w-4 h-4 text-white" />
+                        <span className="text-xs font-bold text-white">
+                            {currentStreak} day streak
+                        </span>
+                    </motion.div>
+
+                    {isPremium && (
+                        <Link to="/premium">
+                            <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 shadow-md"
+                            >
+                                <Trophy className="w-4 h-4 text-white" />
+                                <span className="text-xs font-bold text-white">✨ Premium</span>
+                            </motion.div>
+                        </Link>
+                    )}
+
+                    <div className="hidden sm:flex items-center gap-2 bg-fuchsia-50 dark:bg-fuchsia-900/30 px-4 py-2 rounded-full border border-fuchsia-100 dark:border-fuchsia-800/40">
                         <Zap className="w-4 h-4 text-fuchsia-500" />
                         <span className="text-xs font-bold text-fuchsia-600 dark:text-fuchsia-300">Track your energy</span>
                     </div>
@@ -210,8 +263,41 @@ const Dashboard = () => {
                                     initial={{ scale: 0.85, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
                                     transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                                    className="h-full flex flex-col items-center justify-center text-center py-14 relative z-10"
+                                    className="h-full flex flex-col items-center justify-center text-center py-10 relative z-10 overflow-hidden"
                                 >
+                                    {/* Confetti on premium unlock */}
+                                    {justUnlocked && (
+                                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                                            {Array.from({ length: 20 }).map((_, i) => (
+                                                <ConfettiParticle
+                                                    key={i}
+                                                    delay={i * 0.1}
+                                                    x={Math.random() * 100}
+                                                    color={CONFETTI_COLORS[i % CONFETTI_COLORS.length]}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Premium unlock banner */}
+                                    {justUnlocked && (
+                                        <motion.div
+                                            initial={{ y: -30, opacity: 0 }}
+                                            animate={{ y: 0, opacity: 1 }}
+                                            transition={{ delay: 0.3, type: 'spring' }}
+                                            className="w-full mb-6 px-6 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 shadow-xl"
+                                        >
+                                            <div className="flex items-center justify-center gap-3">
+                                                <Trophy className="w-7 h-7 text-white" />
+                                                <div className="text-left">
+                                                    <p className="font-extrabold text-white text-lg leading-tight">🏆 Premium Unlocked!</p>
+                                                    <p className="text-amber-100 text-xs">30-day streak achieved — you're incredible!</p>
+                                                </div>
+                                                <Star className="w-7 h-7 text-white" />
+                                            </div>
+                                        </motion.div>
+                                    )}
+
                                     <div className="relative mb-5">
                                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-lg">
                                             <CheckCircle2 className="w-10 h-10 text-white" />
@@ -222,14 +308,59 @@ const Dashboard = () => {
                                             className="absolute inset-0 rounded-full bg-emerald-400/30"
                                         />
                                     </div>
+
                                     <h3 className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-teal-500 mb-2">
                                         Check-in Complete! 🎉
                                     </h3>
                                     <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs">
                                         You're building an amazing habit. Keep it up — consistency is key to mental wellness.
                                     </p>
+
+                                    {/* Streak pill */}
+                                    <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{ delay: 0.4, type: 'spring', stiffness: 300 }}
+                                        className={`mt-5 flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r ${streakColor} shadow-md`}
+                                    >
+                                        <Flame className="w-5 h-5 text-white" />
+                                        <span className="font-extrabold text-white text-sm">
+                                            {newStreak} day streak!
+                                        </span>
+                                    </motion.div>
+
+                                    {/* Progress to 30 days */}
+                                    {!isPremium && (
+                                        <div className="mt-4 w-full max-w-xs">
+                                            <div className="flex justify-between text-xs text-slate-500 mb-1">
+                                                <span>Progress to Premium</span>
+                                                <span>{newStreak}/30 days</span>
+                                            </div>
+                                            <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                                <motion.div
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${Math.min((newStreak / 30) * 100, 100)}%` }}
+                                                    transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }}
+                                                    className="h-full bg-gradient-to-r from-indigo-400 to-purple-500 rounded-full"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {isPremium && !justUnlocked && (
+                                        <Link to="/premium">
+                                            <motion.div
+                                                whileHover={{ scale: 1.05 }}
+                                                className="mt-4 flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 shadow-md cursor-pointer"
+                                            >
+                                                <Trophy className="w-4 h-4 text-white" />
+                                                <span className="text-xs font-bold text-white">View Premium Features ✨</span>
+                                            </motion.div>
+                                        </Link>
+                                    )}
+
                                     <button
-                                        onClick={() => setLogged(false)}
+                                        onClick={() => { setLogged(false); setNewStreak(null); setJustUnlocked(false); }}
                                         className="mt-6 text-sm text-primary font-semibold hover:underline"
                                     >
                                         Log another →

@@ -1,0 +1,99 @@
+# Streak System & 30-Day Premium Unlock
+
+Add a daily check-in streak counter to MindWell. Each time a user logs their daily mood check-in, their streak increments. If they miss a day, the streak resets to 0. When they hit a 30-day streak, **premium features** are permanently unlocked on their account.
+
+## Proposed Changes
+
+---
+
+### Backend — User Model
+
+#### [MODIFY] [User.js](file:///c:/mindwell/mindwell/server/models/User.js)
+
+Add three new fields to the schema:
+- `streak` — current consecutive daily check-in count (default `0`)
+- `lastCheckIn` — date of the last check-in (used to determine if today or yesterday was the last check-in)
+- `isPremium` — boolean flag, set to `true` once streak ≥ 30 (default `false`)
+
+Also return these fields in auth responses.
+
+---
+
+### Backend — Mood Controller
+
+#### [MODIFY] [moodController.js](file:///c:/mindwell/mindwell/server/controllers/moodController.js)
+
+In `createMoodLog`, after saving the log:
+1. Fetch the user document.
+2. Compare `lastCheckIn` with today's date:
+   - **Already checked in today** → do nothing (no double increment).
+   - **Checked in yesterday** → increment `streak`, update `lastCheckIn`.
+   - **Missed a day or more** → reset `streak` to `1`, update `lastCheckIn`.
+3. If `streak >= 30` → set `isPremium = true`.
+4. Save user and return `{ streak, isPremium }` alongside the log response.
+
+---
+
+### Backend — Auth Controller
+
+#### [MODIFY] [authController.js](file:///c:/mindwell/mindwell/server/controllers/authController.js)
+
+Include `streak` and `isPremium` in the login and register response bodies so the frontend has them immediately on session start.
+
+---
+
+### Frontend — Auth Context
+
+#### [MODIFY] [AuthContext.jsx](file:///c:/mindwell/mindwell/client/src/context/AuthContext.jsx)
+
+- Expose a `updateStreakInfo(streak, isPremium)` helper that updates both the in-memory `user` state and `localStorage`, so the dashboard can sync streak data after a successful check-in without requiring a full re-login.
+
+---
+
+### Frontend — Dashboard
+
+#### [MODIFY] [Dashboard.jsx](file:///c:/mindwell/mindwell/client/src/pages/Dashboard.jsx)
+
+After a successful check-in POST:
+1. Parse `streak` and `isPremium` from the response.
+2. Call `updateStreakInfo()` to persist the updated values.
+3. Show a **Streak Badge** in the header area (🔥 `N-day streak`).
+4. On the success screen, show the current streak count and, if the user just hit 30 days, display a **🏆 Premium Unlocked!** celebration banner with a confetti-like animation.
+
+---
+
+### Frontend — Navbar
+
+#### [MODIFY] [Navbar.jsx](file:///c:/mindwell/mindwell/client/src/components/Navbar.jsx)
+
+- Add a small **🔥 streak** pill next to the user avatar/name in the navbar, showing live streak count.
+- Add a **✨ Premium** badge if `user.isPremium === true`.
+
+---
+
+### Frontend — New Premium Page (optional gating)
+
+#### [NEW] [Premium.jsx](file:///c:/mindwell/mindwell/client/src/pages/Premium.jsx)
+
+A dedicated page at `/premium` that:
+- Shows the user's streak progress toward 30 days (progress bar).
+- Lists what premium features are unlocked (e.g., advanced analytics, export data, unlimited journal entries).
+- If `isPremium` is true, shows unlocked state with a celebration UI.
+- If not yet unlocked, shows a motivational teaser with days remaining.
+
+Add route in `App.jsx` and link from Navbar.
+
+---
+
+## Verification Plan
+
+### Automated Checks
+- Confirm `streak` is correctly incremented on first check-in of the day.
+- Confirm double-posting on the same day does NOT increment streak.
+- Confirm missing a day resets streak to 1.
+- Confirm `isPremium` flips to `true` when streak reaches 30.
+
+### Manual Verification
+- Log a check-in → streak badge updates in header and navbar.
+- Reach day 30 (or seed the DB with streak=29) → premium unlocked banner appears.
+- Refresh page → streak persists from localStorage / login response.

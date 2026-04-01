@@ -20,6 +20,9 @@ const authUser = async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
+            streak: user.streak,
+            isPremium: user.isPremium,
+            lastCheckIn: user.lastCheckIn,
             token: generateToken(user._id),
         });
     } else {
@@ -51,6 +54,9 @@ const registerUser = async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
+            streak: user.streak,
+            isPremium: user.isPremium,
+            lastCheckIn: user.lastCheckIn,
             token: generateToken(user._id),
         });
     } else {

@@ -14,6 +14,18 @@ const userSchema = mongoose.Schema({
     password: {
         type: String,
         required: true
+    },
+    streak: {
+        type: Number,
+        default: 0
+    },
+    lastCheckIn: {
+        type: Date,
+        default: null
+    },
+    isPremium: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true
@@ -25,7 +37,7 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
-        next();
+        return next();
     }
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
