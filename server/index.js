@@ -4,7 +4,10 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 
 dotenv.config();
-connectDB();
+
+// Connect to MongoDB
+// (Called inside startServer below to ensure we await the connection)
+
 
 const app = express();
 

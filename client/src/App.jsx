@@ -7,9 +7,9 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Journal from './pages/Journal';
 import Analytics from './pages/Analytics';
+import Calendar from './pages/Calendar';
 import Breathing from './pages/Breathing';
 import Navbar from './components/Navbar';
-
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return (
@@ -52,6 +52,7 @@ function App() {
                         <Route path="/" element={<Dashboard />} />
                         <Route path="/journal" element={<Journal />} />
                         <Route path="/analytics" element={<Analytics />} />
+                        <Route path="/calendar" element={<Calendar />} />
                         <Route path="/breathe" element={<Breathing />} />
                         <Route path="*" element={<Navigate to="/" />} />
                       </Routes>
