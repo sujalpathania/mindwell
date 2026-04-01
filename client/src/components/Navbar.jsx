@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { Sun, Moon, LogOut, Sparkles, LayoutDashboard, BookOpen, BarChart2, Calendar, Wind, Settings } from 'lucide-react';
+import { Sun, Moon, LogOut, Sparkles, LayoutDashboard, BookOpen, BarChart2, Calendar, Wind } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -11,7 +11,6 @@ const navLinks = [
     { label: 'Calendar',  path: '/calendar',    icon: Calendar },
     { label: 'Analytics', path: '/analytics',   icon: BarChart2 },
     { label: 'Breathe',   path: '/breathe',     icon: Wind },
-    { label: 'Settings',  path: '/settings',    icon: Settings },
 ];
 
 const Navbar = () => {

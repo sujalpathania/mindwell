@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Edit3, BarChart2, Wind, Calendar, CheckCircle2, Zap, Heart, Smile } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import SmartSuggestions from '../components/SmartSuggestions';
 
 const moodEmojis = ['😞','😔','😐','🙂','😊','😄','🤩','😇','🥳','🌟'];
 
@@ -45,10 +46,11 @@ const QuickCard = ({ to, icon: Icon, iconBg, iconColor, label, sub, pulse }) => 
 
 const Dashboard = () => {
     const { user } = useAuth();
-    const [mood, setMood]     = useState(5);
-    const [energy, setEnergy] = useState(5);
-    const [note, setNote]     = useState('');
-    const [logged, setLogged] = useState(false);
+    const [mood, setMood]       = useState(5);
+    const [energy, setEnergy]   = useState(5);
+    const [note, setNote]       = useState('');
+    const [logged, setLogged]   = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const handleMoodSubmit = async (e) => {
         e.preventDefault();
@@ -291,6 +293,15 @@ const Dashboard = () => {
                     </motion.div>
                 </motion.div>
             </div>
+
+            {/* ── Smart Suggestions ── */}
+            <motion.div variants={item}>
+                <SmartSuggestions
+                    mood={mood}
+                    refreshKey={refreshKey}
+                    onRefresh={() => setRefreshKey(k => k + 1)}
+                />
+            </motion.div>
         </motion.div>
     );
 };
