@@ -1,5 +1,5 @@
 const dotenv = require('dotenv');
-dotenv.config({ path: './.env' }); // Ensure .env is loaded
+dotenv.config({ path: './.env' }); 
 
 if (!process.env.ENCRYPTION_KEY) {
     console.error('FATAL: ENCRYPTION_KEY is missing from .env');

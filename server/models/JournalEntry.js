@@ -7,11 +7,11 @@ const journalEntrySchema = mongoose.Schema({
         ref: 'User'
     },
     content: {
-        type: String, // Encrypted content
+        type: String, 
         required: true
     },
     prompt: {
-        type: String, // The prompt answered, if any
+        type: String, 
         required: false
     }
 }, {

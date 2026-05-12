@@ -1,9 +1,7 @@
 const JournalEntry = require('../models/JournalEntry');
 const { encrypt, decrypt } = require('../utils/crypto');
 
-// @desc    Get user journal entries
-// @route   GET /api/journal
-// @access  Private
+
 const getJournalEntries = async (req, res) => {
     try {
         const entries = await JournalEntry.find({ user: req.user._id }).sort({ createdAt: -1 });
@@ -21,9 +19,7 @@ const getJournalEntries = async (req, res) => {
     }
 };
 
-// @desc    Create new journal entry
-// @route   POST /api/journal
-// @access  Private
+
 const createJournalEntry = async (req, res) => {
     const { content, prompt } = req.body;
 
@@ -41,19 +37,17 @@ const createJournalEntry = async (req, res) => {
             prompt
         });
 
-        // Return the created entry (decrypted for the user immediately)
+     
         res.status(201).json({
             ...entry._doc,
-            content: content // Return original content as confirmation
+            content: content 
         });
     } catch (error) {
         res.status(500).json({ message: 'Server Error' });
     }
 };
 
-// @desc    Delete journal entry
-// @route   DELETE /api/journal/:id
-// @access  Private
+
 const deleteJournalEntry = async (req, res) => {
     try {
         const entry = await JournalEntry.findOne({ _id: req.params.id, user: req.user._id });

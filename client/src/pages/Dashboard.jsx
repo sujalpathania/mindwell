@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Edit3, BarChart2, Wind, Calendar, CheckCircle2, Zap, Heart, Smile, Flame, Trophy, Star } from 'lucide-react';
+import { Edit3, BarChart2, Wind, Calendar, CheckCircle2, Zap, Heart, Smile, Flame, Trophy, Star, Brain } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SmartSuggestions from '../components/SmartSuggestions';
 
@@ -291,7 +291,7 @@ const Dashboard = () => {
                                                 <Trophy className="w-7 h-7 text-white" />
                                                 <div className="text-left">
                                                     <p className="font-extrabold text-white text-lg leading-tight">🏆 Premium Unlocked!</p>
-                                                    <p className="text-amber-100 text-xs">30-day streak achieved — you're incredible!</p>
+                                                    <p className="text-amber-100 text-xs">1-day streak achieved — you're incredible!</p>
                                                 </div>
                                                 <Star className="w-7 h-7 text-white" />
                                             </div>
@@ -329,17 +329,17 @@ const Dashboard = () => {
                                         </span>
                                     </motion.div>
 
-                                    {/* Progress to 30 days */}
+                                    {/* Progress to 2 days */}
                                     {!isPremium && (
                                         <div className="mt-4 w-full max-w-xs">
                                             <div className="flex justify-between text-xs text-slate-500 mb-1">
                                                 <span>Progress to Premium</span>
-                                                <span>{newStreak}/30 days</span>
+                                                <span>{newStreak}/1 day</span>
                                             </div>
                                             <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                                                 <motion.div
                                                     initial={{ width: 0 }}
-                                                    animate={{ width: `${Math.min((newStreak / 30) * 100, 100)}%` }}
+                                                    animate={{ width: `${Math.min((newStreak / 1) * 100, 100)}%` }}
                                                     transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }}
                                                     className="h-full bg-gradient-to-r from-indigo-400 to-purple-500 rounded-full"
                                                 />
@@ -411,6 +411,18 @@ const Dashboard = () => {
                         pulse
                     />
 
+                    {isPremium && (
+                        <QuickCard
+                            to="/mood-detect"
+                            icon={Brain}
+                            iconBg="bg-indigo-100 dark:bg-indigo-900/40"
+                            iconColor="text-indigo-600 dark:text-indigo-400"
+                            label="AI Mood Detect"
+                            sub="Scan face for wellness tips"
+                            pulse
+                        />
+                    )}
+
                     {/* Motivational quote card */}
                     <motion.div
                         variants={item}
@@ -429,6 +441,7 @@ const Dashboard = () => {
             <motion.div variants={item}>
                 <SmartSuggestions
                     mood={mood}
+                    energy={energy}
                     refreshKey={refreshKey}
                     onRefresh={() => setRefreshKey(k => k + 1)}
                 />
