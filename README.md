@@ -20,14 +20,18 @@ MindWell is a privacy-focused mental wellness web application. It acts as a secu
 ### Prerequisites
 - Node.js
 - MongoDB
+- Python 3.9 or higher
+- pip
 
-### Installation
+### Installation & Start
 
 1. **Backend Setup**:
    ```bash
    cd server
    npm install
    # Ensure .env is configured
+   npm start
+   # or
    node index.js
    ```
 
@@ -37,6 +41,26 @@ MindWell is a privacy-focused mental wellness web application. It acts as a secu
    npm install
    npm run dev
    ```
+
+3. **AI Service Setup**:
+   ```bash
+   cd ai_service
+   python -m venv venv
+
+   # Windows PowerShell
+   .\venv\Scripts\Activate.ps1
+
+   # Windows CMD
+   venv\Scripts\activate
+
+   # macOS / Linux
+   source venv/bin/activate
+
+   pip install -r requirements.txt
+   python app.py
+   ```
+
+The AI service runs separately and is used for emotion detection via DeepFace/OpenCV.
 
 ## Encryption Strategy
 
